@@ -2,78 +2,57 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>สะสมแต้มแลกของ</title>
+<title>สะสมแต้ม</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
+:root{ --p:#6a00ff; }
 body{
-  font-family:sans-serif;
-  text-align:center;
-  background:#6a1b9a;
-  color:white;
+  font-family:sans-serif; margin:0; background:#f4f1ff; color:#333;
 }
+.header{
+  background:linear-gradient(135deg,#6a00ff,#8e5cff);
+  color:#fff; padding:24px; text-align:center;
+}
+.container{ max-width:380px; margin: -20px auto 24px; padding:0 12px; }
 .card{
-  background:white;
-  color:#6a1b9a;
-  padding:20px;
-  border-radius:15px;
-  max-width:300px;
-  margin:20px auto;
+  background:#fff; border-radius:18px; padding:20px;
+  box-shadow:0 10px 24px rgba(0,0,0,.08); margin-bottom:14px;
 }
-button{
-  font-size:18px;
-  padding:10px 20px;
-  border:none;
-  border-radius:10px;
-  background:#6a1b9a;
-  color:white;
+.point{ font-size:42px; font-weight:700; color:var(--p); }
+.btn{
+  width:100%; padding:14px; border:none; border-radius:14px;
+  background:var(--p); color:#fff; font-size:18px; font-weight:600;
 }
-.reward{
-  margin-top:10px;
-}
+.nav a{ color:#6a00ff; text-decoration:none; font-weight:600; }
 </style>
 </head>
-
 <body>
-<h1>🎉 สะสมแต้ม</h1>
 
-<div class="card">
-  <p>แต้มของคุณ</p>
-  <h2 id="point">0</h2>
-  <button onclick="addPoint()">กดไลค์ +1</button>
+<div class="header">
+  <h1>⭐ สะสมแต้ม</h1>
+  <p>กดรับแต้ม แลกของรางวัล</p>
 </div>
 
-<div class="card">
-  <h3>🎁 แลกของ</h3>
-  <div class="reward">
-    <button onclick="redeem(10)">แลก 10 แต้ม</button>
+<div class="container">
+  <div class="card" style="text-align:center">
+    <div>แต้มของคุณ</div>
+    <div class="point" id="point">0</div>
+    <button class="btn" onclick="add()">กดรับแต้ม +1</button>
   </div>
-  <div class="reward">
-    <button onclick="redeem(20)">แลก 20 แต้ม</button>
+
+  <div class="card nav" style="text-align:center">
+    <a href="redeem.html">🎁 ไปหน้าแลกของ</a> ·
+    <a href="admin.html">🔐 แอดมิน</a>
   </div>
 </div>
 
 <script>
-let point = localStorage.getItem("point") || 0;
-point = parseInt(point);
-document.getElementById("point").innerText = point;
-
-function addPoint(){
-  point++;
-  save();
-}
-
-function redeem(cost){
-  if(point >= cost){
-    point -= cost;
-    alert("แลกของสำเร็จ 🎁");
-    save();
-  }else{
-    alert("แต้มไม่พอ ❌");
-  }
-}
-
-function save(){
-  localStorage.setItem("point", point);
-  document.getElementById("point").innerText = point;
+let point = parseInt(localStorage.getItem("point")) || 0;
+const el = document.getElementById("point");
+el.textContent = point;
+function add(){
+  point++; localStorage.setItem("point", point);
+  el.textContent = point;
 }
 </script>
 </body>

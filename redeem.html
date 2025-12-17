@@ -64,12 +64,22 @@ a{ text-decoration:none; }
     <h1 id="point">0</h1>
   </div>
 
-  <div class="card">
-    <h3>แลกเงิน 1 บาท</h3>
-    <p>ใช้ 10 แต้ม</p>
-    <button class="btn" onclick="redeem(10)">แลกเงิน</button>
-  </div>
+<div class="card">
+  <h3>💸 แลกเงิน</h3>
 
+  <p>1 บาท = 10 แต้ม</p>
+  <button class="btn" onclick="redeem(10)">แลก 1 บาท</button>
+
+  <hr>
+
+  <p>5 บาท = 50 แต้ม</p>
+  <button class="btn" onclick="redeem(50)">แลก 5 บาท</button>
+
+  <hr>
+
+  <p>10 บาท = 100 แต้ม</p>
+  <button class="btn" onclick="redeem(100)">แลก 10 บาท</button>
+</div>
   <div id="statusBox"></div>
 
   <div class="card" style="text-align:center">

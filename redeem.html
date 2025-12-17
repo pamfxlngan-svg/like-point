@@ -2,66 +2,50 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>แลกของรางวัล</title>
+<title>แลกของ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{
-  font-family:sans-serif;
-  background:#222;
-  color:white;
-  text-align:center;
-}
-.box{
-  background:#fff;
-  color:#222;
-  padding:20px;
-  margin:20px auto;
-  border-radius:15px;
-  max-width:320px;
-}
-button{
-  padding:10px 20px;
-  border:none;
-  border-radius:10px;
-  background:green;
-  color:white;
-  font-size:16px;
-}
-button:disabled{
-  background:gray;
-}
+:root{ --p:#6a00ff; }
+body{ font-family:sans-serif; background:#f4f1ff; margin:0; }
+.header{ background:#6a00ff; color:#fff; padding:20px; text-align:center; }
+.container{ max-width:380px; margin:12px auto; padding:0 12px; }
+.card{ background:#fff; border-radius:18px; padding:16px; margin-bottom:12px;
+  box-shadow:0 10px 24px rgba(0,0,0,.08); }
+.btn{ width:100%; padding:12px; border:none; border-radius:12px;
+  background:var(--p); color:#fff; font-size:16px; }
+.btn.gray{ background:#bbb; }
 </style>
 </head>
-
 <body>
 
-<h1>🎁 แลกของรางวัล</h1>
+<div class="header"><h2>🎁 แลกของรางวัล</h2></div>
 
-<div class="box">
-  <p>แต้มของคุณ</p>
-  <h2 id="point">0</h2>
-</div>
+<div class="container">
+  <div class="card" style="text-align:center">
+    แต้มของคุณ
+    <h1 id="point">0</h1>
+  </div>
 
-<div class="box">
-  <h3>🎟 เเลก 1 บาท</h3>
-  <p>ใช้ 10 แต้ม</p>
-  <button onclick="redeem(1)">แลก</button>
+  <div class="card">
+    <h3>คูปอง 50 บาท</h3>
+    <p>ใช้ 100 แต้ม</p>
+    <button class="btn" onclick="redeem(100)">แลก</button>
+  </div>
+
+  <div class="card">
+    <a href="./">⬅ กลับหน้าเก็บแต้ม</a>
+  </div>
 </div>
 
 <script>
 let point = parseInt(localStorage.getItem("point")) || 0;
-document.getElementById("point").innerText = point;
-
+document.getElementById("point").textContent = point;
 function redeem(cost){
-  if(point < cost){
-    alert("แต้มไม่พอ ❌");
-    return;
-  }
-  point -= cost;
-  localStorage.setItem("point", point);
-  document.getElementById("point").innerText = point;
+  if(point<cost){ alert("แต้มไม่พอ ❌"); return; }
+  point-=cost; localStorage.setItem("point", point);
+  document.getElementById("point").textContent = point;
   alert("แลกสำเร็จ 🎉");
 }
 </script>
-
 </body>
 </html>

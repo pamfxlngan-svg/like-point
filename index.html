@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>สะสมแต้มกดไลก์</title>
+<style>
+body{
+  font-family: sans-serif;
+  text-align:center;
+  background:#6a1b9a;
+  color:white;
+}
+button{
+  font-size:20px;
+  padding:15px 30px;
+  border:none;
+  border-radius:10px;
+  background:white;
+  color:#6a1b9a;
+}
+</style>
+</head>
+<body>
+
+<h1>สะสมแต้ม</h1>
+<p>แต้มของคุณ: <span id="point">0</span></p>
+
+<button onclick="addPoint()">กดไลก์</button>
+
+<script>
+let point = 0;
+function addPoint(){
+  point++;
+  document.getElementById("point").innerText = point;
+}
+</script>
+
+</body>
+</html>

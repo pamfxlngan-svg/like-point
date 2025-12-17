@@ -2,38 +2,79 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>สะสมแต้มกดไลก์</title>
+<title>สะสมแต้มแลกของ</title>
 <style>
 body{
-  font-family: sans-serif;
+  font-family:sans-serif;
   text-align:center;
   background:#6a1b9a;
   color:white;
 }
-button{
-  font-size:20px;
-  padding:15px 30px;
-  border:none;
-  border-radius:10px;
+.card{
   background:white;
   color:#6a1b9a;
+  padding:20px;
+  border-radius:15px;
+  max-width:300px;
+  margin:20px auto;
+}
+button{
+  font-size:18px;
+  padding:10px 20px;
+  border:none;
+  border-radius:10px;
+  background:#6a1b9a;
+  color:white;
+}
+.reward{
+  margin-top:10px;
 }
 </style>
 </head>
+
 <body>
+<h1>🎉 สะสมแต้ม</h1>
 
-<h1>สะสมแต้ม</h1>
-<p>แต้มของคุณ: <span id="point">0</span></p>
+<div class="card">
+  <p>แต้มของคุณ</p>
+  <h2 id="point">0</h2>
+  <button onclick="addPoint()">กดไลค์ +1</button>
+</div>
 
-<button onclick="addPoint()">กดไลก์</button>
+<div class="card">
+  <h3>🎁 แลกของ</h3>
+  <div class="reward">
+    <button onclick="redeem(10)">แลก 10 แต้ม</button>
+  </div>
+  <div class="reward">
+    <button onclick="redeem(20)">แลก 20 แต้ม</button>
+  </div>
+</div>
 
 <script>
-let point = 0;
+let point = localStorage.getItem("point") || 0;
+point = parseInt(point);
+document.getElementById("point").innerText = point;
+
 function addPoint(){
   point++;
+  save();
+}
+
+function redeem(cost){
+  if(point >= cost){
+    point -= cost;
+    alert("แลกของสำเร็จ 🎁");
+    save();
+  }else{
+    alert("แต้มไม่พอ ❌");
+  }
+}
+
+function save(){
+  localStorage.setItem("point", point);
   document.getElementById("point").innerText = point;
 }
 </script>
-
 </body>
 </html>

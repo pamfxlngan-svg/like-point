@@ -17,10 +17,11 @@ body{ font-family:sans-serif; background:#f4f1ff; margin:0; }
   width:100%; padding:14px; border:none; border-radius:14px;
   background:var(--p); color:#fff; font-size:16px; font-weight:600;
 }
-.note{
-  background:#fff3cd; color:#856404;
-  padding:12px; border-radius:12px; margin-top:10px;
+.status{
+  padding:12px; border-radius:12px; margin-top:10px; text-align:center;
 }
+.wait{ background:#fff3cd; color:#856404; }
+.done{ background:#d4edda; color:#155724; }
 </style>
 </head>
 <body>
@@ -42,7 +43,7 @@ body{ font-family:sans-serif; background:#f4f1ff; margin:0; }
     <button class="btn" onclick="redeem(10)">แลกเงิน</button>
   </div>
 
-  <div id="status"></div>
+  <div id="statusBox"></div>
 
   <div class="card">
     <a href="./">⬅ กลับหน้าเก็บแต้ม</a>
@@ -52,26 +53,35 @@ body{ font-family:sans-serif; background:#f4f1ff; margin:0; }
 
 <script>
 let point = parseInt(localStorage.getItem("point")) || 0;
+let status = localStorage.getItem("redeemStatus") || "";
+
 document.getElementById("point").innerText = point;
+renderStatus();
 
 function redeem(cost){
   if(point < cost){
     alert("แต้มไม่พอ ❌");
     return;
   }
-
   point -= cost;
   localStorage.setItem("point", point);
-  localStorage.setItem("redeemStatus", "รอแอดมินโอนเงิน");
-
+  localStorage.setItem("redeemStatus", "รอแอดมินโอน");
   document.getElementById("point").innerText = point;
-  document.getElementById("status").innerHTML = `
-    <div class="note">
-      ✅ ทำรายการสำเร็จ<br>
-      ⏳ สถานะ: <b>รอแอดมินโอนเงิน</b><br>
-      📌 กรุณารอการตรวจสอบ
-    </div>
-  `;
+  renderStatus();
+}
+
+function renderStatus(){
+  const box = document.getElementById("statusBox");
+  const s = localStorage.getItem("redeemStatus");
+  if(!s){
+    box.innerHTML = "";
+    return;
+  }
+  if(s === "โอนสำเร็จ"){
+    box.innerHTML = `<div class="status done">✅ สถานะ: <b>โอนสำเร็จ</b></div>`;
+  }else{
+    box.innerHTML = `<div class="status wait">⏳ สถานะ: <b>${s}</b></div>`;
+  }
 }
 </script>
 

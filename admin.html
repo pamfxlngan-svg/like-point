@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>แอดมินดูคะแนน</title>
+<style>
+body{
+  font-family:sans-serif;
+  text-align:center;
+  background:#222;
+  color:white;
+}
+.box{
+  background:#fff;
+  color:#222;
+  padding:20px;
+  margin:30px auto;
+  border-radius:15px;
+  max-width:300px;
+}
+</style>
+</head>
+
+<body>
+<h1>🔐 หน้าแอดมิน</h1>
+
+<div class="box">
+  <p>แต้มที่ถูกสะสม</p>
+  <h2 id="point">0</h2>
+</div>
+
+<script>
+let point = localStorage.getItem("point") || 0;
+document.getElementById("point").innerText = point;
+</script>
+</body>
+</html>

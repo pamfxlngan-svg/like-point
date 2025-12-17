@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>แลกของรางวัล</title>
+<style>
+body{
+  font-family:sans-serif;
+  background:#222;
+  color:white;
+  text-align:center;
+}
+.box{
+  background:#fff;
+  color:#222;
+  padding:20px;
+  margin:20px auto;
+  border-radius:15px;
+  max-width:320px;
+}
+button{
+  padding:10px 20px;
+  border:none;
+  border-radius:10px;
+  background:green;
+  color:white;
+  font-size:16px;
+}
+button:disabled{
+  background:gray;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎁 แลกของรางวัล</h1>
+
+<div class="box">
+  <p>แต้มของคุณ</p>
+  <h2 id="point">0</h2>
+</div>
+
+<div class="box">
+  <h3>🎟 คูปอง 50 บาท</h3>
+  <p>ใช้ 100 แต้ม</p>
+  <button onclick="redeem(100)">แลก</button>
+</div>
+
+<script>
+let point = parseInt(localStorage.getItem("point")) || 0;
+document.getElementById("point").innerText = point;
+
+function redeem(cost){
+  if(point < cost){
+    alert("แต้มไม่พอ ❌");
+    return;
+  }
+  point -= cost;
+  localStorage.setItem("point", point);
+  document.getElementById("point").innerText = point;
+  alert("แลกสำเร็จ 🎉");
+}
+</script>
+
+</body>
+</html>

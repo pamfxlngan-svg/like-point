@@ -2,28 +2,55 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>แลกเงิน</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แลกเงิน</title>
+
 <style>
-:root{ --p:#6a00ff; }
-body{ font-family:sans-serif; background:#f4f1ff; margin:0; }
-.header{ background:#6a00ff; color:#fff; padding:20px; text-align:center; }
-.container{ max-width:380px; margin:12px auto; padding:0 12px; }
+body{
+  font-family:sans-serif;
+  background:#f4f1ff;
+  margin:0;
+}
+.header{
+  background:#6a00ff;
+  color:#fff;
+  padding:20px;
+  text-align:center;
+}
+.container{
+  max-width:380px;
+  margin:12px auto;
+  padding:12px;
+}
 .card{
-  background:#fff; border-radius:18px; padding:16px; margin-bottom:12px;
+  background:#fff;
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:12px;
   box-shadow:0 10px 24px rgba(0,0,0,.08);
 }
 .btn{
-  width:100%; padding:14px; border:none; border-radius:14px;
-  background:var(--p); color:#fff; font-size:16px; font-weight:600;
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:#6a00ff;
+  color:#fff;
+  font-size:16px;
+  font-weight:600;
 }
 .status{
-  padding:12px; border-radius:12px; margin-top:10px; text-align:center;
+  padding:12px;
+  border-radius:12px;
+  text-align:center;
+  margin-top:10px;
 }
 .wait{ background:#fff3cd; color:#856404; }
 .done{ background:#d4edda; color:#155724; }
+a{ text-decoration:none; }
 </style>
 </head>
+
 <body>
 
 <div class="header">
@@ -45,8 +72,8 @@ body{ font-family:sans-serif; background:#f4f1ff; margin:0; }
 
   <div id="statusBox"></div>
 
-  <div class="card">
-    <a href="./">⬅ กลับหน้าเก็บแต้ม</a>
+  <div class="card" style="text-align:center">
+    <a href="./">⬅ กลับหน้าสะสมแต้ม</a>
   </div>
 
 </div>
@@ -63,24 +90,30 @@ function redeem(cost){
     alert("แต้มไม่พอ ❌");
     return;
   }
+
   point -= cost;
   localStorage.setItem("point", point);
+
   localStorage.setItem("redeemStatus", "รอแอดมินโอน");
+  status = "รอแอดมินโอน";
+
   document.getElementById("point").innerText = point;
   renderStatus();
+
+  window.location.href =
+  "https://docs.google.com/forms/d/e/1FAIpQLSd1uuTnjNCnICCgq1-5wUgkTj3MGl3jtnxotaSs_nsF3RtKzg/viewform";
 }
 
 function renderStatus(){
   const box = document.getElementById("statusBox");
-  const s = localStorage.getItem("redeemStatus");
-  if(!s){
-    box.innerHTML = "";
-    return;
+  if(!status) return;
+
+  if(status === "รอแอดมินโอน"){
+    box.innerHTML = `<div class="status wait">⏳ รอแอดมินโอน</div>`;
   }
-  if(s === "โอนสำเร็จ"){
-    box.innerHTML = `<div class="status done">✅ สถานะ: <b>โอนสำเร็จ</b></div>`;
-  }else{
-    box.innerHTML = `<div class="status wait">⏳ สถานะ: <b>${s}</b></div>`;
+
+  if(status === "โอนสำเร็จ"){
+    box.innerHTML = `<div class="status done">✅ โอนสำเร็จ</div>`;
   }
 }
 </script>

@@ -11,7 +11,7 @@ input,button{width:100%;padding:10px;margin-top:6px;border-radius:8px}
 .add{background:#4caf50;color:#fff}
 .edit{background:#2196f3;color:#fff}
 .del{background:#f44336;color:#fff}
-.row{border-bottom:1px solid #ddd;padding:8px 0}
+.row{border-bottom:1px solid #ddd;padding:8px}
 </style>
 </head>
 <body>
@@ -19,18 +19,22 @@ input,button{width:100%;padding:10px;margin-top:6px;border-radius:8px}
 <div class="card">
 <h2>Admin</h2>
 
-<h3>เพิ่มแต้มให้ผู้ใช้</h3>
+<h3>เพิ่มแต้มผู้ใช้</h3>
 <input id="u" placeholder="ชื่อผู้ใช้">
 <input id="p" type="number" placeholder="จำนวนแต้ม">
-<button class="add" onclick="addPoint()">➕ เพิ่มแต้ม</button>
+<button class="add" onclick="addPoint()">เพิ่มแต้ม</button>
 
 <hr>
-<h3>จัดการของรางวัล</h3>
+<h3>ของรางวัล</h3>
 <input id="rname" placeholder="ชื่อรางวัล">
 <input id="rcost" type="number" placeholder="แต้มที่ใช้">
 <button class="add" onclick="saveReward()">บันทึก</button>
 
 <div id="list"></div>
+
+<hr>
+<h3>คำขอแลกรางวัล</h3>
+<div id="reqList"></div>
 </div>
 
 <script>
@@ -38,50 +42,82 @@ let rewards=JSON.parse(localStorage.getItem('rewards')||'[]');
 let edit=null;
 
 function addPoint(){
-  let users=JSON.parse(localStorage.getItem('data')||'{}');
-  if(!u.value||p.value<=0) return alert('ข้อมูลไม่ถูกต้อง');
-  if(!users[u.value]) users[u.value]={password:'',points:0};
-  users[u.value].points+=Number(p.value);
-  localStorage.setItem('data',JSON.stringify(users));
-  alert('เพิ่มแต้มเรียบร้อย');
-  u.value=p.value='';
+ let d=JSON.parse(localStorage.getItem('data')||'{}');
+ if(!d[u.value]) d[u.value]={password:'',points:0};
+ d[u.value].points+=Number(p.value);
+ localStorage.setItem('data',JSON.stringify(d));
+ alert('เพิ่มแต้มแล้ว');
 }
 
 function saveReward(){
-  if(!rname.value||rcost.value<=0) return alert('ข้อมูลไม่ถูกต้อง');
-  if(edit!=null){ rewards[edit]={name:rname.value,cost:Number(rcost.value)}; edit=null; }
-  else rewards.push({name:rname.value,cost:Number(rcost.value)});
-  localStorage.setItem('rewards',JSON.stringify(rewards));
-  rname.value=rcost.value='';
-  render();
+ if(edit!=null){
+  rewards[edit]={name:rname.value,cost:Number(rcost.value)};
+  edit=null;
+ }else rewards.push({name:rname.value,cost:Number(rcost.value)});
+ localStorage.setItem('rewards',JSON.stringify(rewards));
+ rname.value=rcost.value='';
+ render();
 }
 
 function editReward(i){
-  rname.value=rewards[i].name;
-  rcost.value=rewards[i].cost;
-  edit=i;
+ rname.value=rewards[i].name;
+ rcost.value=rewards[i].cost;
+ edit=i;
 }
 
 function delReward(i){
-  if(confirm('ลบของรางวัล?')){
-    rewards.splice(i,1);
-    localStorage.setItem('rewards',JSON.stringify(rewards));
-    render();
-  }
+ if(confirm('ลบ?')){
+  rewards.splice(i,1);
+  localStorage.setItem('rewards',JSON.stringify(rewards));
+  render();
+ }
 }
 
 function render(){
-  list.innerHTML='';
-  rewards.forEach((r,i)=>{
-    list.innerHTML+=`
-    <div class="row">
-    ${r.name} (${r.cost} แต้ม)
-    <button class="edit" onclick="editReward(${i})">✏️</button>
-    <button class="del" onclick="delReward(${i})">❌</button>
-    </div>`;
-  });
+ list.innerHTML='';
+ rewards.forEach((r,i)=>{
+  list.innerHTML+=`
+  <div class="row">
+   ${r.name} (${r.cost} แต้ม)
+   <button class="edit" onclick="editReward(${i})">แก้</button>
+   <button class="del" onclick="delReward(${i})">ลบ</button>
+  </div>`;
+ });
 }
 render();
+
+/* คำขอแลก */
+function loadReq(){
+ let req=JSON.parse(localStorage.getItem('redeemRequests')||'[]');
+ let users=JSON.parse(localStorage.getItem('data')||'{}');
+ reqList.innerHTML='';
+ req.forEach((r,i)=>{
+  reqList.innerHTML+=`
+  <div class="row">
+   👤 ${r.user}<br>
+   🎁 ${r.reward} (${r.cost})<br>
+   📌 ${r.status}<br>
+   ${r.status==='รอโอน'
+    ? `<button class="add" onclick="confirmPay(${i})">โอนแล้ว</button>`:''
+   }
+  </div>`;
+ });
+}
+
+function confirmPay(i){
+ let req=JSON.parse(localStorage.getItem('redeemRequests'));
+ let users=JSON.parse(localStorage.getItem('data'));
+ let r=req[i];
+ if(users[r.user].points<r.cost)
+  return alert('แต้มไม่พอ');
+ users[r.user].points-=r.cost;
+ r.status='โอนแล้ว';
+ localStorage.setItem('data',JSON.stringify(users));
+ localStorage.setItem('redeemRequests',JSON.stringify(req));
+ loadReq();
+}
+
+loadReq();
 </script>
 </body>
 </html>

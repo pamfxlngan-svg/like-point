@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>ระบบสะสมแต้ม (หลายผู้ใช้ + แอดมิน)</title>
+  <title>ระบบสะสมแต้ม (หลายผู้ใช้ + แอดมิน + QR)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px }
@@ -12,9 +12,11 @@
     .redeem { background:#ff9800; color:#fff }
     .reset { background:#607d8b; color:#fff }
     .admin { background:#f44336; color:#fff }
+    .qr { background:#3f51b5; color:#fff }
     hr { margin:15px 0 }
     table { width:100%; border-collapse:collapse }
     th, td { border:1px solid #ddd; padding:6px; text-align:center }
+    img { margin-top:10px }
   </style>
 </head>
 <body><div class="card">
@@ -26,18 +28,32 @@
   <hr />  <h3>แอดมิน</h3>
   <input id="adminPass" type="password" placeholder="รหัสแอดมิน" />
   <button class="admin" onclick="adminLogin()">เข้าแอดมิน</button>  <div id="adminPanel" style="display:none">
-    <h4>ผู้ใช้ทั้งหมด</h4>
-    <table>
-      <thead><tr><th>ชื่อ</th><th>แต้ม</th><th>ลบ</th></tr></thead>
-      <tbody id="userTable"></tbody>
-    </table>
+    <h4>QR รับแต้ม (สแกน 1 ครั้ง = +1 แต้ม)</h4>
+    <button class="qr" onclick="genQR()">สร้าง QR</button>
+    <img id="qrImg" /><hr />
+<h4>ผู้ใช้ทั้งหมด</h4>
+<table>
+  <thead><tr><th>ชื่อ</th><th>แต้ม</th><th>ลบ</th></tr></thead>
+  <tbody id="userTable"></tbody>
+</table>
+
   </div>
 </div><script>
   const ADMIN_PASSWORD = '1234';
+  const QR_TOKEN = 'addpoint';
   let users = JSON.parse(localStorage.getItem('users') || '{}');
   let currentUser = localStorage.getItem('currentUser');
 
   if (currentUser) loadUser(currentUser);
+
+  // รับแต้มจาก QR
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('qr') === QR_TOKEN && currentUser) {
+    users[currentUser]++;
+    save();
+    alert('รับแต้มจาก QR แล้ว +1');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 
   function save() {
     localStorage.setItem('users', JSON.stringify(users));
@@ -100,6 +116,11 @@
       save();
       renderTable();
     }
+  }
+
+  function genQR() {
+    const url = location.origin + location.pathname + '?qr=' + QR_TOKEN;
+    qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url);
   }
 </script></body>
 </html>

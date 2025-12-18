@@ -1,106 +1,106 @@
-<!DOCTYPE html><html lang="th">
+<!DOCTYPE html>
+<html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <title>ระบบสะสมแต้ม (ผู้ใช้)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>แอดมิน | จัดการของรางวัล</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px }
-    .card { background:#fff; padding:20px; border-radius:12px; max-width:420px; margin:auto; box-shadow:0 4px 10px rgba(0,0,0,.1) }
-    input, button, select { width:100%; padding:10px; margin-top:6px; border-radius:8px }
+    body { font-family: Arial; background:#f5f5f5; padding:20px }
+    .card {
+      background:#fff; padding:20px; border-radius:12px;
+      max-width:500px; margin:auto; box-shadow:0 4px 10px rgba(0,0,0,.1)
+    }
+    input, button {
+      width:100%; padding:10px; margin-top:6px; border-radius:8px
+    }
     button { border:none; cursor:pointer }
     .add { background:#4caf50; color:#fff }
-    .redeem { background:#ff9800; color:#fff }
-    .reset { background:#607d8b; color:#fff }
+    .edit { background:#2196f3; color:#fff }
+    .del { background:#f44336; color:#fff }
+    .row { border-bottom:1px solid #ddd; padding:10px 0 }
+    small { color:#666 }
   </style>
 </head>
-<body><div class="card">
-  <h2>ระบบสะสมแต้ม</h2><label>ชื่อผู้ใช้</label> <input id="username" placeholder="เช่น somchai" /> <button onclick="login()">เข้าสู่ระบบ</button>
+<body>
 
-  <hr />  <p>ผู้ใช้: <b id="showUser">-</b></p>
-  <p>แต้ม: <b id="points">0</b></p><button class="add" onclick="addPoint()">+ เพิ่มแต้ม</button>
+<div class="card">
+  <h2>จัดการของรางวัล (Admin)</h2>
 
-  <h3>แลกของรางวัล</h3>
-  <select id="rewardSelect"></select>
-  <button class="redeem" onclick="redeemReward()">แลกรางวัล</button><button class="reset" onclick="resetMe()">รีเซ็ตฉัน</button>
+  <label>ชื่อรางวัล</label>
+  <input id="rewardName" placeholder="เช่น น้ำเปล่า">
 
-</div><script>
-  // โหลดข้อมูล
-  let users = JSON.parse(localStorage.getItem('users') || '{}');
-  let currentUser = localStorage.getItem('currentUser');
-  let rewards = JSON.parse(localStorage.getItem('rewards') || '[{"name":"0.10","cost":5}]');
+  <label>แต้มที่ใช้</label>
+  <input id="rewardCost" type="number" placeholder="เช่น 5">
 
-  // ถ้ามีผู้ใช้เดิม
-  if (currentUser && users[currentUser] !== undefined) {
-    loadUser(currentUser);
-  }
-  loadRewards();
+  <button class="add" onclick="addReward()">➕ เพิ่มของรางวัล</button>
 
-  // รับแต้มจาก QR (แก้บั๊กให้เพิ่มแต้มแน่นอน)
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('qr') === 'addpoint') {
-    if (!currentUser) {
-      alert('กรุณาเข้าสู่ระบบก่อนรับแต้ม');
-    } else {
-      users[currentUser] = (users[currentUser] || 0) + 1;
-      save();
-      loadUser(currentUser);
-      alert('รับแต้มจาก QR +1');
-    }
-    history.replaceState({}, document.title, location.pathname);
-  }
+  <hr>
+  <h3>รายการของรางวัล</h3>
+  <div id="rewardList"></div>
+</div>
+
+<script>
+  let rewards = JSON.parse(localStorage.getItem('rewards') || '[]');
+  let editIndex = null;
 
   function save() {
-    localStorage.setItem('users', JSON.stringify(users));
-    localStorage.setItem('currentUser', currentUser);
     localStorage.setItem('rewards', JSON.stringify(rewards));
+    render();
   }
 
-  function login() {
-    const u = username.value.trim();
-    if (!u) return alert('กรุณาใส่ชื่อ');
-    if (users[u] === undefined) users[u] = 0;
-    currentUser = u;
+  function addReward() {
+    const name = rewardName.value.trim();
+    const cost = Number(rewardCost.value);
+
+    if (!name || cost <= 0) {
+      alert('กรุณากรอกชื่อและแต้มให้ถูกต้อง');
+      return;
+    }
+
+    if (editIndex !== null) {
+      rewards[editIndex] = { name, cost };
+      editIndex = null;
+    } else {
+      rewards.push({ name, cost });
+    }
+
+    rewardName.value = '';
+    rewardCost.value = '';
     save();
-    loadUser(u);
   }
 
-  function loadUser(u) {
-    showUser.innerText = u;
-    points.innerText = users[u] ?? 0;
+  function editReward(i) {
+    rewardName.value = rewards[i].name;
+    rewardCost.value = rewards[i].cost;
+    editIndex = i;
   }
 
-  function addPoint() {
-    if (!currentUser) return alert('ยังไม่ได้เลือกผู้ใช้');
-    users[currentUser] = (users[currentUser] || 0) + 1;
+  function deleteReward(i) {
+    if (!confirm('ลบของรางวัลนี้?')) return;
+    rewards.splice(i, 1);
     save();
-    loadUser(currentUser);
   }
 
-  function loadRewards() {
-    rewardSelect.innerHTML = '';
+  function render() {
+    rewardList.innerHTML = '';
+    if (rewards.length === 0) {
+      rewardList.innerHTML = '<small>ยังไม่มีของรางวัล</small>';
+      return;
+    }
+
     rewards.forEach((r, i) => {
-      rewardSelect.innerHTML += `<option value="${i}">${r.name} (${r.cost} แต้ม)</option>`;
+      rewardList.innerHTML += `
+        <div class="row">
+          <b>${r.name}</b> – ${r.cost} แต้ม
+          <button class="edit" onclick="editReward(${i})">✏️ แก้ไข</button>
+          <button class="del" onclick="deleteReward(${i})">❌ ลบ</button>
+        </div>
+      `;
     });
   }
 
-  function redeemReward() {
-    if (!currentUser) return alert('กรุณาเข้าสู่ระบบ');
-    const r = rewards[rewardSelect.value];
-    if (!r) return;
-    if (users[currentUser] < r.cost) return alert('แต้มไม่พอ');
-    users[currentUser] -= r.cost;
-    save();
-    loadUser(currentUser);
-    alert('แลก ' + r.name + ' สำเร็จ');
-  }
+  render();
+</script>
 
-  function resetMe() {
-    if (!currentUser) return;
-    if (confirm('รีเซ็ตแต้มของคุณ?')) {
-      users[currentUser] = 0;
-      save();
-      loadUser(currentUser);
-    }
-  }
-</script></body>
+</body>
 </html>

@@ -1,63 +1,48 @@
 <!DOCTYPE html><html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>ระบบสะสมแต้ม (หลายผู้ใช้ + แอดมิน + QR)</title>
+  <title>ระบบสะสมแต้ม (ผู้ใช้)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px }
     .card { background:#fff; padding:20px; border-radius:12px; max-width:420px; margin:auto; box-shadow:0 4px 10px rgba(0,0,0,.1) }
-    input, button { width:100%; padding:10px; margin-top:6px; border-radius:8px }
+    input, button, select { width:100%; padding:10px; margin-top:6px; border-radius:8px }
     button { border:none; cursor:pointer }
     .add { background:#4caf50; color:#fff }
     .redeem { background:#ff9800; color:#fff }
     .reset { background:#607d8b; color:#fff }
-    .admin { background:#f44336; color:#fff }
-    .qr { background:#3f51b5; color:#fff }
-    hr { margin:15px 0 }
-    table { width:100%; border-collapse:collapse }
-    th, td { border:1px solid #ddd; padding:6px; text-align:center }
-    img { margin-top:10px }
   </style>
 </head>
 <body><div class="card">
   <h2>ระบบสะสมแต้ม</h2><label>ชื่อผู้ใช้</label> <input id="username" placeholder="เช่น somchai" /> <button onclick="login()">เข้าสู่ระบบ</button>
 
   <hr />  <p>ผู้ใช้: <b id="showUser">-</b></p>
-  <p>แต้ม: <b id="points">0</b></p><button class="add" onclick="addPoint()">+ เพิ่มแต้ม</button> <button class="redeem" onclick="redeem()">🎁 แลกของ (10 แต้ม)</button> <button class="reset" onclick="resetMe()">รีเซ็ตฉัน</button>
+  <p>แต้ม: <b id="points">0</b></p><button class="add" onclick="addPoint()">+ เพิ่มแต้ม</button>
 
-  <hr />  <h3>แอดมิน</h3>
-  <input id="adminPass" type="password" placeholder="รหัสแอดมิน" />
-  <button class="admin" onclick="adminLogin()">เข้าแอดมิน</button>  <div id="adminPanel" style="display:none">
-    <h4>QR รับแต้ม (สแกน 1 ครั้ง = +1 แต้ม)</h4>
-    <button class="qr" onclick="genQR()">สร้าง QR</button>
-    <img id="qrImg" /><hr />
-<h4>ผู้ใช้ทั้งหมด</h4>
-<table>
-  <thead><tr><th>ชื่อ</th><th>แต้ม</th><th>ลบ</th></tr></thead>
-  <tbody id="userTable"></tbody>
-</table>
+  <h3>แลกของรางวัล</h3>
+  <select id="rewardSelect"></select>
+  <button class="redeem" onclick="redeemReward()">แลกรางวัล</button><button class="reset" onclick="resetMe()">รีเซ็ตฉัน</button>
 
-  </div>
 </div><script>
-  const ADMIN_PASSWORD = '1234';
-  const QR_TOKEN = 'addpoint';
   let users = JSON.parse(localStorage.getItem('users') || '{}');
   let currentUser = localStorage.getItem('currentUser');
+  const rewards = JSON.parse(localStorage.getItem('rewards') || '[{"name":"น้ำเปล่า","cost":5},{"name":"กาแฟ","cost":10},{"name":"ขนม","cost":15}]');
 
   if (currentUser) loadUser(currentUser);
+  loadRewards();
 
-  // รับแต้มจาก QR
   const params = new URLSearchParams(window.location.search);
-  if (params.get('qr') === QR_TOKEN && currentUser) {
-    users[currentUser]++;
+  if (params.get('qr') === 'addpoint' && currentUser) {
+    users[currentUser] = (users[currentUser] || 0) + 1;
     save();
     alert('รับแต้มจาก QR แล้ว +1');
-    window.history.replaceState({}, document.title, window.location.pathname);
+    history.replaceState({}, document.title, location.pathname);
   }
 
   function save() {
     localStorage.setItem('users', JSON.stringify(users));
     localStorage.setItem('currentUser', currentUser);
+    localStorage.setItem('rewards', JSON.stringify(rewards));
   }
 
   function login() {
@@ -81,46 +66,29 @@
     save();
   }
 
-  function redeem() {
-    if (users[currentUser] >= 10) {
-      users[currentUser] -= 10;
-      loadUser(currentUser);
-      save();
-    } else alert('แต้มไม่พอ');
+  function loadRewards() {
+    rewardSelect.innerHTML = '';
+    rewards.forEach((r, i) => {
+      rewardSelect.innerHTML += `<option value="${i}">${r.name} (${r.cost} แต้ม)</option>`;
+    });
+  }
+
+  function redeemReward() {
+    const r = rewards[rewardSelect.value];
+    if (!r) return;
+    if (users[currentUser] < r.cost) return alert('แต้มไม่พอ');
+    users[currentUser] -= r.cost;
+    save();
+    loadUser(currentUser);
+    alert('แลก ' + r.name + ' สำเร็จ');
   }
 
   function resetMe() {
     if (confirm('รีเซ็ตแต้มของคุณ?')) {
       users[currentUser] = 0;
+      save();
       loadUser(currentUser);
-      save();
     }
-  }
-
-  function adminLogin() {
-    if (adminPass.value !== ADMIN_PASSWORD) return alert('รหัสผิด');
-    adminPanel.style.display = 'block';
-    renderTable();
-  }
-
-  function renderTable() {
-    userTable.innerHTML = '';
-    for (const u in users) {
-      userTable.innerHTML += `<tr><td>${u}</td><td>${users[u]}</td><td><button onclick="delUser('${u}')">❌</button></td></tr>`;
-    }
-  }
-
-  function delUser(u) {
-    if (confirm('ลบผู้ใช้ ' + u + '?')) {
-      delete users[u];
-      save();
-      renderTable();
-    }
-  }
-
-  function genQR() {
-    const url = location.origin + location.pathname + '?qr=' + QR_TOKEN;
-    qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url);
   }
 </script></body>
 </html>

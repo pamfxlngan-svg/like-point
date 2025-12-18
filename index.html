@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{font-family:Arial;background:#f5f5f5;padding:20px}
-.card{background:#fff;padding:20px;border-radius:12px;max-width:420px;margin:auto;box-shadow:0 4px 10px rgba(0,0,0,.1)}
+.card{background:#fff;padding:20px;border-radius:12px;max-width:420px;margin:auto}
 input,button,select{width:100%;padding:10px;margin-top:6px;border-radius:8px}
 button{border:none;cursor:pointer}
 .add{background:#4caf50;color:#fff}
@@ -15,10 +15,9 @@ button{border:none;cursor:pointer}
 
 /* Toast */
 .toast{
-  position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
-  background:#323232;color:#fff;padding:12px 18px;border-radius:10px;
-  opacity:0;pointer-events:none;transition:.3s;
-  box-shadow:0 6px 15px rgba(0,0,0,.25)
+ position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+ background:#323232;color:#fff;padding:12px 18px;border-radius:10px;
+ opacity:0;pointer-events:none;transition:.3s;
 }
 .toast.show{opacity:1;bottom:45px}
 .toast.success{background:#4caf50}
@@ -44,7 +43,7 @@ button{border:none;cursor:pointer}
 
   <h3>แลกของรางวัล</h3>
   <select id="rewardSelect"></select>
-  <button class="redeem" onclick="redeem()">แลกรางวัล</button>
+  <button class="redeem" onclick="redeem()">ส่งคำขอแลก</button>
 
   <button class="logout" onclick="logout()">ออกจากระบบ</button>
 </div>
@@ -61,78 +60,88 @@ if(currentUser && data[currentUser]) showApp(currentUser);
 loadRewards();
 
 /* Toast */
-function showToast(text,type='success'){
-  const t=document.getElementById('toast');
-  t.className='toast show '+type;
-  t.innerText=text;
-  setTimeout(()=>t.className='toast',2500);
+function showToast(t,type='success'){
+ let e=document.getElementById('toast');
+ e.className='toast show '+type;
+ e.innerText=t;
+ setTimeout(()=>e.className='toast',2500);
 }
 
-/* QR รับแต้ม */
+/* QR */
 const q=new URLSearchParams(location.search);
 if(q.get('qr')==='addpoint'){
-  if(!currentUser) showToast('กรุณาเข้าสู่ระบบก่อน','error');
-  else{
-    data[currentUser].points++;
-    save(); update();
-    showToast('รับแต้ม +1');
-  }
-  history.replaceState({},'',location.pathname);
+ if(!currentUser) showToast('กรุณาเข้าสู่ระบบก่อน','error');
+ else{
+  data[currentUser].points++;
+  save();update();
+  showToast('รับแต้ม +1');
+ }
+ history.replaceState({},'',location.pathname);
 }
 
 function save(){
-  localStorage.setItem('data',JSON.stringify(data));
-  localStorage.setItem('currentUser',currentUser);
+ localStorage.setItem('data',JSON.stringify(data));
+ localStorage.setItem('currentUser',currentUser);
 }
 
 function login(){
-  const u=username.value.trim();
-  const p=password.value;
-  if(!u||!p) return showToast('กรอกข้อมูลให้ครบ','error');
-
-  if(!data[u]) data[u]={password:p,points:0};
-  else if(data[u].password!==p) return showToast('รหัสผ่านไม่ถูกต้อง','error');
-
-  currentUser=u; save(); showApp(u);
+ if(!username.value||!password.value)
+  return showToast('กรอกข้อมูลให้ครบ','error');
+ if(!data[username.value])
+  data[username.value]={password:password.value,points:0};
+ else if(data[username.value].password!==password.value)
+  return showToast('รหัสผ่านไม่ถูกต้อง','error');
+ currentUser=username.value;
+ save();showApp(currentUser);
 }
 
 function showApp(u){
-  loginBox.style.display='none';
-  app.style.display='block';
-  showUser.innerText=u;
-  update();
+ loginBox.style.display='none';
+ app.style.display='block';
+ showUser.innerText=u;
+ update();
 }
 
-function update(){ points.innerText=data[currentUser].points }
+function update(){points.innerText=data[currentUser].points}
 
 function addPoint(){
-  data[currentUser].points++;
-  save(); update();
-  showToast('+1 แต้ม');
+ data[currentUser].points++;
+ save();update();
+ showToast('+1 แต้ม');
 }
 
 function loadRewards(){
-  rewardSelect.innerHTML='';
-  if(rewards.length===0){
-    rewardSelect.innerHTML='<option>ยังไม่มีของรางวัล</option>';return;
-  }
-  rewards.forEach((r,i)=>{
-    rewardSelect.innerHTML+=`<option value="${i}">${r.name} (${r.cost} แต้ม)</option>`;
-  });
+ rewardSelect.innerHTML='';
+ if(rewards.length===0){
+  rewardSelect.innerHTML='<option>ยังไม่มีของรางวัล</option>';return;
+ }
+ rewards.forEach((r,i)=>{
+  rewardSelect.innerHTML+=`<option value="${i}">${r.name} (${r.cost} แต้ม)</option>`;
+ });
 }
 
 function redeem(){
-  if(rewards.length===0) return showToast('ยังไม่มีของรางวัล','error');
-  const r=rewards[rewardSelect.value];
-  if(data[currentUser].points<r.cost) return showToast('แต้มไม่พอ','error');
-  data[currentUser].points-=r.cost;
-  save(); update();
-  showToast('แลก '+r.name+' สำเร็จ 🎉');
+ if(rewards.length===0)
+  return showToast('ยังไม่มีของรางวัล','error');
+ let r=rewards[rewardSelect.value];
+ if(data[currentUser].points<r.cost)
+  return showToast('แต้มไม่พอ','error');
+
+ let req=JSON.parse(localStorage.getItem('redeemRequests')||'[]');
+ req.push({
+  user:currentUser,
+  reward:r.name,
+  cost:r.cost,
+  time:new Date().toLocaleString(),
+  status:'รอโอน'
+ });
+ localStorage.setItem('redeemRequests',JSON.stringify(req));
+ showToast('ส่งคำขอแล้ว รอแอดมินโอน 💸');
 }
 
 function logout(){
-  localStorage.removeItem('currentUser');
-  location.reload();
+ localStorage.removeItem('currentUser');
+ location.reload();
 }
 </script>
 </body>

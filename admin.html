@@ -38,11 +38,11 @@ let rewards=JSON.parse(localStorage.getItem('rewards')||'[]');
 let edit=null;
 
 function addPoint(){
-  let users=JSON.parse(localStorage.getItem('users')||'{}');
+  let users=JSON.parse(localStorage.getItem('data')||'{}');
   if(!u.value||p.value<=0) return alert('ข้อมูลไม่ถูกต้อง');
-  if(users[u.value]==null) users[u.value]=0;
-  users[u.value]+=Number(p.value);
-  localStorage.setItem('users',JSON.stringify(users));
+  if(!users[u.value]) users[u.value]={password:'',points:0};
+  users[u.value].points+=Number(p.value);
+  localStorage.setItem('data',JSON.stringify(users));
   alert('เพิ่มแต้มเรียบร้อย');
   u.value=p.value='';
 }

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>เว็บทำงานออนไลน์</title>
+<style>
+body{font-family:sans-serif;background:#f2f2f2;padding:20px}
+.box{background:#fff;padding:15px;border-radius:10px;margin-bottom:10px}
+input,button{width:100%;padding:10px;margin:5px 0}
+button{background:#4CAF50;color:#fff;border:none;border-radius:5px}
+.hide{display:none}
+</style>
+</head>
+<body>
+
+<div id="login" class="box">
+<h3>เข้าสู่ระบบ</h3>
+<input id="lu" placeholder="ชื่อผู้ใช้">
+<input id="lp" type="password" placeholder="รหัสผ่าน">
+<button onclick="login()">เข้าสู่ระบบ</button>
+<p onclick="show('register')">สมัครสมาชิก</p>
+</div>
+
+<div id="register" class="box hide">
+<h3>สมัครสมาชิก</h3>
+<input id="ru" placeholder="ชื่อผู้ใช้">
+<input id="rp" type="password" placeholder="รหัสผ่าน">
+<button onclick="register()">สมัคร</button>
+</div>
+
+<div id="dashboard" class="box hide">
+<h3>หน้าทำงาน</h3>
+<p id="money"></p>
+<button onclick="doJob()">ทำงาน +5 บาท</button>
+<button onclick="show('withdraw')">ถอนเงิน</button>
+<button onclick="logout()">ออกจากระบบ</button>
+</div>
+
+<div id="withdraw" class="box hide">
+<h3>ถอนเงิน</h3>
+<input id="amount" placeholder="จำนวนเงิน">
+<button onclick="withdraw()">ยืนยันถอน</button>
+</div>
+
+<script>
+let users = JSON.parse(localStorage.getItem("users")) || {};
+let loginUser = localStorage.getItem("login");
+
+if(loginUser){show("dashboard");updateMoney();}
+
+function show(id){
+  ["login","register","dashboard","withdraw"].forEach(d=>document.getElementById(d).classList.add("hide"));
+  document.getElementById(id).classList.remove("hide");
+}
+
+function register(){
+  if(users[ru.value]) return alert("มีผู้ใช้นี้แล้ว");
+  users[ru.value]={pass:rp.value,money:0};
+  localStorage.setItem("users",JSON.stringify(users));
+  alert("สมัครสำเร็จ");
+  show("login");
+}
+
+function login(){
+  if(users[lu.value] && users[lu.value].pass===lp.value){
+    localStorage.setItem("login",lu.value);
+    loginUser=lu.value;
+    show("dashboard");
+    updateMoney();
+  }else alert("ข้อมูลผิด");
+}
+
+function doJob(){
+  users[loginUser].money+=5;
+  localStorage.setItem("users",JSON.stringify(users));
+  updateMoney();
+}
+
+function updateMoney(){
+  money.innerText="เงินสะสม: "+users[loginUser].money+" บาท";
+}
+
+function withdraw(){
+  let a=parseInt(amount.value);
+  if(users[loginUser].money>=a){
+    users[loginUser].money-=a;
+    localStorage.setItem("users",JSON.stringify(users));
+    alert("ส่งคำขอถอนแล้ว (รอแอดมิน)");
+    show("dashboard");
+    updateMoney();
+  }else alert("เงินไม่พอ");
+}
+
+function logout(){
+  localStorage.removeItem("login");
+  show("login");
+}
+</script>
+
+</body>
+</html>

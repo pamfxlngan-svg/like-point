@@ -1,65 +1,105 @@
 <!DOCTYPE html><html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>เว็บสะสมแต้ม</title>
+  <title>ระบบสะสมแต้ม (หลายผู้ใช้ + แอดมิน)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: sans-serif; background:#f5f5f5; padding:20px }
-    .card { background:#fff; padding:20px; border-radius:12px; max-width:420px; margin:auto }
-    input, button { padding:10px; border-radius:8px; margin:4px; width:100% }
-    button { border:none }
+    body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px }
+    .card { background:#fff; padding:20px; border-radius:12px; max-width:420px; margin:auto; box-shadow:0 4px 10px rgba(0,0,0,.1) }
+    input, button { width:100%; padding:10px; margin-top:6px; border-radius:8px }
+    button { border:none; cursor:pointer }
+    .add { background:#4caf50; color:#fff }
+    .redeem { background:#ff9800; color:#fff }
+    .reset { background:#607d8b; color:#fff }
+    .admin { background:#f44336; color:#fff }
+    hr { margin:15px 0 }
+    table { width:100%; border-collapse:collapse }
+    th, td { border:1px solid #ddd; padding:6px; text-align:center }
   </style>
 </head>
-<body>
-  <div class="card">
-    <h2>ระบบสะสมแต้ม</h2><label>ชื่อผู้ใช้</label>
-<input id="username" placeholder="กรอกชื่อ" />
-<button onclick="saveUser()">บันทึกชื่อ</button>
+<body><div class="card">
+  <h2>ระบบสะสมแต้ม</h2><label>ชื่อผู้ใช้</label> <input id="username" placeholder="เช่น somchai" /> <button onclick="login()">เข้าสู่ระบบ</button>
 
-<p>ผู้ใช้: <b id="showUser">-</b></p>
-<p>แต้มของคุณ: <b id="points">0</b></p>
+  <hr />  <p>ผู้ใช้: <b id="showUser">-</b></p>
+  <p>แต้ม: <b id="points">0</b></p><button class="add" onclick="addPoint()">+ เพิ่มแต้ม</button> <button class="redeem" onclick="redeem()">🎁 แลกของ (10 แต้ม)</button> <button class="reset" onclick="resetMe()">รีเซ็ตฉัน</button>
 
-<button onclick="addPoint()">➕ เพิ่มแต้ม</button>
-<button onclick="redeem()">🎁 แลกของ (10 แต้ม)</button>
-<button onclick="resetAll()">♻️ รีเซ็ต</button>
+  <hr />  <h3>แอดมิน</h3>
+  <input id="adminPass" type="password" placeholder="รหัสแอดมิน" />
+  <button class="admin" onclick="adminLogin()">เข้าแอดมิน</button>  <div id="adminPanel" style="display:none">
+    <h4>ผู้ใช้ทั้งหมด</h4>
+    <table>
+      <thead><tr><th>ชื่อ</th><th>แต้ม</th><th>ลบ</th></tr></thead>
+      <tbody id="userTable"></tbody>
+    </table>
+  </div>
+</div><script>
+  const ADMIN_PASSWORD = '1234';
+  let users = JSON.parse(localStorage.getItem('users') || '{}');
+  let currentUser = localStorage.getItem('currentUser');
 
-  </div>  <script>
-    let points = Number(localStorage.getItem('points')) || 0;
-    let user = localStorage.getItem('user') || '-';
+  if (currentUser) loadUser(currentUser);
 
-    document.getElementById('points').innerText = points;
-    document.getElementById('showUser').innerText = user;
+  function save() {
+    localStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem('currentUser', currentUser);
+  }
 
-    function saveUser() {
-      const u = document.getElementById('username').value;
-      if(u){
-        localStorage.setItem('user', u);
-        document.getElementById('showUser').innerText = u;
-      }
+  function login() {
+    const u = username.value.trim();
+    if (!u) return alert('กรุณาใส่ชื่อ');
+    if (!users[u]) users[u] = 0;
+    currentUser = u;
+    loadUser(u);
+    save();
+  }
+
+  function loadUser(u) {
+    showUser.innerText = u;
+    points.innerText = users[u];
+  }
+
+  function addPoint() {
+    if (!currentUser) return alert('ยังไม่ได้เลือกผู้ใช้');
+    users[currentUser]++;
+    loadUser(currentUser);
+    save();
+  }
+
+  function redeem() {
+    if (users[currentUser] >= 10) {
+      users[currentUser] -= 10;
+      loadUser(currentUser);
+      save();
+    } else alert('แต้มไม่พอ');
+  }
+
+  function resetMe() {
+    if (confirm('รีเซ็ตแต้มของคุณ?')) {
+      users[currentUser] = 0;
+      loadUser(currentUser);
+      save();
     }
+  }
 
-    function addPoint() {
-      points++;
-      localStorage.setItem('points', points);
-      document.getElementById('points').innerText = points;
-    }
+  function adminLogin() {
+    if (adminPass.value !== ADMIN_PASSWORD) return alert('รหัสผิด');
+    adminPanel.style.display = 'block';
+    renderTable();
+  }
 
-    function redeem() {
-      if(points >= 10) {
-        points -= 10;
-        alert('แลกของสำเร็จ!');
-      } else {
-        alert('แต้มไม่พอ');
-      }
-      localStorage.setItem('points', points);
-      document.getElementById('points').innerText = points;
+  function renderTable() {
+    userTable.innerHTML = '';
+    for (const u in users) {
+      userTable.innerHTML += `<tr><td>${u}</td><td>${users[u]}</td><td><button onclick="delUser('${u}')">❌</button></td></tr>`;
     }
+  }
 
-    function resetAll(){
-      if(confirm('ล้างข้อมูลทั้งหมด?')){
-        localStorage.clear();
-        location.reload();
-      }
+  function delUser(u) {
+    if (confirm('ลบผู้ใช้ ' + u + '?')) {
+      delete users[u];
+      save();
+      renderTable();
     }
-  </script></body>
+  }
+</script></body>
 </html>

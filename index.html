@@ -24,17 +24,28 @@
   <button class="redeem" onclick="redeemReward()">แลกรางวัล</button><button class="reset" onclick="resetMe()">รีเซ็ตฉัน</button>
 
 </div><script>
+  // โหลดข้อมูล
   let users = JSON.parse(localStorage.getItem('users') || '{}');
   let currentUser = localStorage.getItem('currentUser');
-  const rewards = JSON.parse(localStorage.getItem('rewards') || '[{"name":"0.25","cost":5},{"name":"0.30","cost":10},{"name":"0.35","cost":15}]''[{
-  if (currentUser) loadUser(currentUser);
+  let rewards = JSON.parse(localStorage.getItem('rewards') || '[{"name":"0.10","cost":5}]');
+
+  // ถ้ามีผู้ใช้เดิม
+  if (currentUser && users[currentUser] !== undefined) {
+    loadUser(currentUser);
+  }
   loadRewards();
 
+  // รับแต้มจาก QR (แก้บั๊กให้เพิ่มแต้มแน่นอน)
   const params = new URLSearchParams(window.location.search);
-  if (params.get('qr') === 'addpoint' && currentUser) {
-    users[currentUser] = (users[currentUser] || 0) + 1;
-    save();
-    alert('รับแต้มจาก QR แล้ว +1');
+  if (params.get('qr') === 'addpoint') {
+    if (!currentUser) {
+      alert('กรุณาเข้าสู่ระบบก่อนรับแต้ม');
+    } else {
+      users[currentUser] = (users[currentUser] || 0) + 1;
+      save();
+      loadUser(currentUser);
+      alert('รับแต้มจาก QR +1');
+    }
     history.replaceState({}, document.title, location.pathname);
   }
 
@@ -47,22 +58,22 @@
   function login() {
     const u = username.value.trim();
     if (!u) return alert('กรุณาใส่ชื่อ');
-    if (!users[u]) users[u] = 0;
+    if (users[u] === undefined) users[u] = 0;
     currentUser = u;
-    loadUser(u);
     save();
+    loadUser(u);
   }
 
   function loadUser(u) {
     showUser.innerText = u;
-    points.innerText = users[u];
+    points.innerText = users[u] ?? 0;
   }
 
   function addPoint() {
     if (!currentUser) return alert('ยังไม่ได้เลือกผู้ใช้');
-    users[currentUser]++;
-    loadUser(currentUser);
+    users[currentUser] = (users[currentUser] || 0) + 1;
     save();
+    loadUser(currentUser);
   }
 
   function loadRewards() {
@@ -73,6 +84,7 @@
   }
 
   function redeemReward() {
+    if (!currentUser) return alert('กรุณาเข้าสู่ระบบ');
     const r = rewards[rewardSelect.value];
     if (!r) return;
     if (users[currentUser] < r.cost) return alert('แต้มไม่พอ');
@@ -83,6 +95,7 @@
   }
 
   function resetMe() {
+    if (!currentUser) return;
     if (confirm('รีเซ็ตแต้มของคุณ?')) {
       users[currentUser] = 0;
       save();

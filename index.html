@@ -26,8 +26,7 @@
 </div><script>
   let users = JSON.parse(localStorage.getItem('users') || '{}');
   let currentUser = localStorage.getItem('currentUser');
-  const rewards = JSON.parse(localStorage.getItem('rewards') || '[{"name":"น้ำเปล่า","cost":5},{"name":"กาแฟ","cost":10},{"name":"ขนม","cost":15}]');
-
+  const rewards = JSON.parse(localStorage.getItem('rewards') || '[{"name":"0.25","cost":5},{"name":"0.30","cost":10},{"name":"0.35","cost":15}]''[{
   if (currentUser) loadUser(currentUser);
   loadRewards();
 
